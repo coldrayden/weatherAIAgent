@@ -50,3 +50,22 @@ def get_weather(location: str) -> dict:
             "humidity": f"{humidity}%",
             "wind_speed_mps": f"{wind_speed} m/s"
         }
+
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 404:
+            return {"error": f"Could not find weather data for '{location}'. Please check the location name."}
+        elif response.status_code == 401:
+            return {"error": "Authentication failed. The API key is likely invalid or inactive."}
+        else:
+            return {"error": f"An HTTP error occurred: {http_err}"}
+    except requests.exceptions.RequestException as req_err:
+        return {"error":f"A network error occurred: {req_err}"}
+    except KeyError:
+        return {"error": "Received unexpected data format from the weather API."}
+    except Exception as e:
+        return {"error": f"An unexpected error occurred: {e}"}
+
+
+if __name__ == "__main__":
+    # The server will run and listen for requests from the client over stdio
+    mcp.run(transport="stdio")
